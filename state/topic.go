@@ -50,7 +50,7 @@ func (t *Topic) CompletedItem(ID int) {
 }
 
 func (t *Topic) Subscribe() chan *Item {
-	consumer := Consumer{}
+	consumer := Consumer{Idle: true}
 	consumer.Channel = make(chan *Item)
 	t.incomingConsumers <- consumer
 	return consumer.Channel
@@ -77,7 +77,7 @@ func (t *Topic) handleIn(msg string) {
 
 func (t *Topic) canWork() bool {
 
-	if t.Consumer.BusyWith != nil {
+	if t.Consumer.Idle == false {
 		return false
 	}
 
@@ -102,7 +102,7 @@ func (t *Topic) work() {
 	item := t.Head.Value.(*Item)
 	t.Consumer.Channel <- item
 	item.Busy = true
-	t.Consumer.BusyWith = item
+	t.Consumer.Idle = false
 
 }
 func (t *Topic) markDone(ID int) {
@@ -121,7 +121,7 @@ func (t *Topic) markDone(ID int) {
 		t.Head = n
 	}
 
-	t.Consumer.BusyWith = nil
+	t.Consumer.Idle = true
 	t.Count--
 
 	t.work()

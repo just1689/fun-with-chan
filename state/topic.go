@@ -9,16 +9,17 @@ type Topic struct {
 	Name              string
 	Head              *ring.Ring
 	Count             int
+	CountID           int64
 	Incoming          chan string
-	Completed         chan int
+	Completed         chan int64
 	Consumer          *Consumer
 	incomingConsumers chan Consumer
 }
 
 func NewTopic(name string) *Topic {
-	t := Topic{Name: name, Count: 0}
+	t := Topic{Name: name, Count: 0, CountID: 0}
 	t.Incoming = make(chan string)
-	t.Completed = make(chan int)
+	t.Completed = make(chan int64)
 	t.manageIO()
 	return &t
 }
@@ -45,7 +46,7 @@ func (t *Topic) PutItem(msg string) {
 	t.Incoming <- msg
 }
 
-func (t *Topic) CompletedItem(ID int) {
+func (t *Topic) CompletedItem(ID int64) {
 	t.Completed <- ID
 }
 
@@ -63,12 +64,12 @@ func (t *Topic) handleIn(msg string) {
 	if t.Count == 1 {
 		r := ring.New(1)
 		t.Head = r
-		t.Head.Value = &Item{ID: t.Count, Msg: msg, Busy: false}
+		t.Head.Value = &Item{ID: t.CountID, Msg: msg, Busy: false}
 		return
 	}
 
 	r := ring.New(1)
-	r.Value = &Item{ID: t.Count, Msg: msg, Busy: false}
+	r.Value = &Item{ID: t.CountID, Msg: msg, Busy: false}
 	r.Link(t.Head)
 
 	t.work()
@@ -105,7 +106,7 @@ func (t *Topic) work() {
 	t.Consumer.Idle = false
 
 }
-func (t *Topic) markDone(ID int) {
+func (t *Topic) markDone(ID int64) {
 	ok, r, _ := t.find(ID)
 	if !ok {
 		//Serious error
@@ -127,7 +128,7 @@ func (t *Topic) markDone(ID int) {
 	t.work()
 }
 
-func (t *Topic) find(ID int) (ok bool, ri *ring.Ring, it *Item) {
+func (t *Topic) find(ID int64) (ok bool, ri *ring.Ring, it *Item) {
 	var r *ring.Ring
 	r = t.Head
 	item := r.Value.(*Item)

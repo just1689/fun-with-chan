@@ -2,7 +2,6 @@ package state
 
 import (
 	"container/ring"
-	"fmt"
 )
 
 type Topic struct {
@@ -107,12 +106,7 @@ func (t *Topic) work() {
 
 }
 func (t *Topic) markDone(ID int64) {
-	ok, r, _ := t.find(ID)
-	if !ok {
-		//Serious error
-		fmt.Println("Could not find ", ID)
-		panic(0)
-	}
+	r := t.find(ID)
 
 	n := t.Head.Next()
 
@@ -128,30 +122,30 @@ func (t *Topic) markDone(ID int64) {
 	t.work()
 }
 
-func (t *Topic) find(ID int64) (ok bool, ri *ring.Ring, it *Item) {
+func (t *Topic) find(ID int64) *ring.Ring {
 	var r *ring.Ring
 	r = t.Head
 	item := r.Value.(*Item)
 	headID := item.ID
 	found := item.ID == ID
 	if found {
-		return true, r, item
+		return r
 	}
 
 	for !found {
 		r = r.Next()
 		if r == nil {
-			return false, nil, nil
+			return nil
 		}
 		item := r.Value.(*Item)
 		found = item.ID == ID
 		if found {
-			return true, r, item
+			return r
 		}
 		if item.ID == headID {
-			return false, nil, nil
+			return nil
 		}
 	}
-	return false, nil, nil
+	return nil
 
 }

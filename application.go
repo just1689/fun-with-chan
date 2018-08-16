@@ -21,23 +21,24 @@ func main() {
 
 	go func() {
 
-		for i := 1; i <= 10; i++ {
+		for i := 1; i <= 20; i++ {
 			msg := fmt.Sprint(i)
 			fmt.Println("Writing: ", msg)
 			topic.PutItem(msg)
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 		}
+	}()
+
+	go func() {
 		for i := 20; i <= 200; i = i + 10 {
 			msg := fmt.Sprint(i)
 			fmt.Println("Writing: ", msg)
 			topic.PutItem(msg)
-			time.Sleep(200 * time.Millisecond)
+			time.Sleep(20 * time.Millisecond)
 		}
-
-
 
 	}()
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 }

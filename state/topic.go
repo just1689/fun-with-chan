@@ -67,9 +67,9 @@ func (t *Topic) handleIn(msg string) {
 		return
 	}
 
-	ring := ring.New(1)
-	ring.Value = &Item{ID: t.Count, Msg: msg, Busy: false}
-	ring.Link(t.Head)
+	r := ring.New(1)
+	r.Value = &Item{ID: t.Count, Msg: msg, Busy: false}
+	r.Link(t.Head)
 
 	t.work()
 

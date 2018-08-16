@@ -27,5 +27,5 @@
 ### Prettiness
 - Web server
 - Health check rest endpoint
-- Fancy healthy rest endpoint
+- Fancy healthy rest endpoint (puts, pushes, count at time, up-time, processing time, ingestion time)
 - HTML page for querying the endpoints

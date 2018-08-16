@@ -6,12 +6,13 @@ import (
 )
 
 type Topic struct {
-	Name      string
-	Head      *ring.Ring
-	Count     int
-	Incoming  chan string
-	Completed chan int
-	Consumer  *Consumer
+	Name              string
+	Head              *ring.Ring
+	Count             int
+	Incoming          chan string
+	Completed         chan int
+	Consumer          *Consumer
+	incomingConsumers chan Consumer
 }
 
 func NewTopic(name string) *Topic {
@@ -32,6 +33,9 @@ func (t *Topic) manageIO() {
 			case ID := <-t.Completed:
 				t.markDone(ID)
 				break
+			case c := <-t.incomingConsumers:
+				t.Consumer = &c
+				break
 			}
 		}
 	}()
@@ -48,7 +52,7 @@ func (t *Topic) CompletedItem(ID int) {
 func (t *Topic) Subscribe() chan *Item {
 	consumer := Consumer{}
 	consumer.Channel = make(chan *Item)
-	t.Consumer = &consumer
+	t.incomingConsumers <- consumer
 	return consumer.Channel
 }
 

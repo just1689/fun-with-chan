@@ -1,5 +1,8 @@
 # fun-with-chan
 
+The goal of this project is to have fun with ring.Ring, chan, grpc and go routines
+
+
 ## Completed
 
 - Put

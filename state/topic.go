@@ -106,7 +106,7 @@ func (t *Topic) work() {
 
 }
 func (t *Topic) markDone(ID int64) {
-	r := t.find(ID)
+	r := find(t.Head, ID)
 
 	n := t.Head.Next()
 
@@ -120,32 +120,4 @@ func (t *Topic) markDone(ID int64) {
 	t.Count--
 
 	t.work()
-}
-
-func (t *Topic) find(ID int64) *ring.Ring {
-	var r *ring.Ring
-	r = t.Head
-	item := r.Value.(*Item)
-	headID := item.ID
-	found := item.ID == ID
-	if found {
-		return r
-	}
-
-	for !found {
-		r = r.Next()
-		if r == nil {
-			return nil
-		}
-		item := r.Value.(*Item)
-		found = item.ID == ID
-		if found {
-			return r
-		}
-		if item.ID == headID {
-			return nil
-		}
-	}
-	return nil
-
 }

@@ -1,6 +1,6 @@
 package state
 
 type DoneMessage struct {
-	ConsumerID int
+	ConsumerID string
 	ItemID     int64
 }

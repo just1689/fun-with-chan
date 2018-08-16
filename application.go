@@ -7,17 +7,10 @@ import (
 )
 
 func main() {
+
 	fmt.Println("Starting")
 
 	topic := state.NewTopic("WORK")
-
-	go func() {
-		ID, c := topic.Subscribe()
-		for s := range c {
-			fmt.Println("Reading: ", s.Msg)
-			topic.CompletedItem(state.DoneMessage{ConsumerID: ID, ItemID: s.ID})
-		}
-	}()
 
 	go func() {
 
@@ -29,16 +22,20 @@ func main() {
 		}
 	}()
 
+	createConsumer(topic, "100")
+	//createConsumer(topic, "200")
+
+	time.Sleep(10 * time.Second)
+}
+
+func createConsumer(topic *state.Topic, ID string) {
+	c := topic.Subscribe(ID)
 	go func() {
-		for i := 20; i <= 200; i = i + 10 {
-			msg := fmt.Sprint(i)
-			fmt.Println("Writing: ", msg)
-			topic.PutItem(msg)
-			time.Sleep(20 * time.Millisecond)
+		for item := range c {
+			fmt.Println("Message from ", ID, " says: ", item.Msg)
+			topic.CompletedItem(state.DoneMessage{ConsumerID: ID, ItemID: item.ID})
+
 		}
-
 	}()
-
-	time.Sleep(5 * time.Second)
 
 }

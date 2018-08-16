@@ -2,6 +2,7 @@ package state
 
 import (
 	"container/ring"
+	"fmt"
 )
 
 type Topic struct {
@@ -11,15 +12,16 @@ type Topic struct {
 	CountID           int64
 	Incoming          chan string
 	Completed         chan DoneMessage
-	Consumer          []*Consumer
+	Consumer          []Consumer
 	consumerInc       int
-	incomingConsumers chan Consumer
+	IncomingConsumers chan Consumer
 }
 
 func NewTopic(name string) *Topic {
 	t := Topic{Name: name, Count: 0, CountID: 0, consumerInc: 0}
-	t.Incoming = make(chan string)
-	t.Completed = make(chan DoneMessage)
+	t.Incoming = make(chan string, 5)
+	t.Completed = make(chan DoneMessage, 5)
+	t.IncomingConsumers = make(chan Consumer, 5)
 	t.manageIO()
 	return &t
 }
@@ -28,8 +30,8 @@ func (t *Topic) manageIO() {
 	go func() {
 		for {
 			select {
-			case c := <-t.incomingConsumers:
-				t.handleConsumer(&c)
+			case c := <-t.IncomingConsumers:
+				t.handleConsumer(c)
 				break
 			case message := <-t.Completed:
 				t.handleDone(message)
@@ -49,16 +51,15 @@ func (t *Topic) PutItem(msg string) {
 func (t *Topic) CompletedItem(message DoneMessage) {
 	t.Completed <- message
 }
-
-func (t *Topic) Subscribe() (consumerID int, ch chan *Item) {
-	t.consumerInc++ //PROBABLY NOT SAFE!
-	consumer := Consumer{Idle: true, ID: t.consumerInc}
+func (t *Topic) Subscribe(ID string) chan *Item {
+	t.consumerInc++
+	consumer := Consumer{Idle: true, ID: ID}
 	consumer.Channel = make(chan *Item)
-	t.incomingConsumers <- consumer
-	return consumer.ID, consumer.Channel
+	t.Consumer = append(t.Consumer, consumer)
+	return consumer.Channel
 }
 
-func (t *Topic) handleConsumer(c *Consumer) {
+func (t *Topic) handleConsumer(c Consumer) {
 	t.Consumer = append(t.Consumer, c)
 
 }
@@ -78,7 +79,7 @@ func (t *Topic) handleIn(msg string) {
 	r.Value = &Item{ID: t.CountID, Msg: msg, Busy: false}
 	r.Link(t.Head)
 
-	t.work()
+	t.work(0)
 
 }
 
@@ -89,6 +90,7 @@ func (t *Topic) canWork() bool {
 	}
 
 	if t.Consumer == nil {
+		fmt.Println("NW: consumers")
 		return false
 	}
 
@@ -106,21 +108,27 @@ func (t *Topic) canWork() bool {
 	return (t.Head.Value.(*Item)).Busy == false
 
 }
-
-func (t *Topic) work() {
+func (t *Topic) work(last int) {
 	if !t.canWork() {
 		return
 	}
 
+	worked := 0
+
 	item := t.Head.Value.(*Item)
 
 	for _, consumer := range t.Consumer {
+
 		if consumer.Idle {
 			consumer.Channel <- item
 			item.Busy = true
 			consumer.Idle = false
+			worked++
+			break
 		}
+
 	}
+
 }
 
 func (t *Topic) handleDone(message DoneMessage) {
@@ -143,5 +151,5 @@ func (t *Topic) handleDone(message DoneMessage) {
 
 	t.Count--
 
-	t.work()
+	t.work(0)
 }

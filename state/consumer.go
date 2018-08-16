@@ -1,7 +1,7 @@
 package state
 
 type Consumer struct {
-	ID      int
+	ID      string
 	Channel chan *Item
 	Idle    bool
 }

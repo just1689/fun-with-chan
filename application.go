@@ -2,62 +2,32 @@ package main
 
 import (
 	"fmt"
+	"github.com/just1689/fun-with-chan/state"
+	"time"
 )
-
-var incoming = make(chan string)
-var outgoing = make(chan chan string)
-var head *Item
 
 func main() {
 	fmt.Println("Starting")
-	go manageQueue()
 
-}
+	topic := state.NewTopic("WORK")
 
-func manageQueue() {
-
-	for {
-		select {
-		case i := <-incoming:
-			handleIn(i)
-			break
-		case c := <-outgoing:
-			handleOut(c)
+	go func() {
+		c := topic.Subscribe()
+		for s := range c {
+			fmt.Println("Reading: ", s.Msg)
+			topic.CompletedItem(s.ID)
 		}
-	}
+	}()
 
-}
+	go func() {
+		for i := 1; i <= 10; i++ {
+			msg := fmt.Sprint(i)
+			fmt.Println("Writing: ", msg)
+			topic.PutItem(msg)
+			time.Sleep(100 * time.Millisecond)
+		}
+	}()
 
-type Item struct {
-	Msg     string
-	Next    *Item
-	Prev    *Item
-	Busy    bool
-	Timeout int
-}
-
-func handleIn(i string) {
-
-	if head == nil {
-		head = &Item{Msg: i, Busy: false}
-		return
-	}
-
-	if head.Prev == nil {
-		//There is one item but only one item
-		newItem := Item{Msg: i, Busy: false, Next: head, Prev: head}
-		head.Next = &newItem
-		head.Prev = &newItem
-		return
-	}
-
-	//There are already two or more items. Append
-	newItem := Item{Msg: i, Busy: false, Next: head, Prev: head.Prev}
-	head.Prev.Next = &newItem
-	head.Prev = &newItem
-
-}
-
-func handleOut(c chan string) {
+	time.Sleep(2 * time.Second)
 
 }

@@ -77,7 +77,7 @@ func (t *Topic) handleIn(msg string) {
 
 func (t *Topic) canWork() bool {
 
-	if t.Consumer.Idle == false {
+	if t.Consumer == nil || t.Consumer.Idle == false {
 		return false
 	}
 

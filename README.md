@@ -5,10 +5,11 @@ The goal of this project is to have fun with ring.Ring, chan, grpc and go routin
 
 ## Completed
 
-- Put
+### Basic operations
 - Subscribe
+- Put
+- Push
 - Mark done
-
 
 ## To do
 

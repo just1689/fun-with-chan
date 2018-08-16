@@ -10,15 +10,16 @@ type Topic struct {
 	Count             int
 	CountID           int64
 	Incoming          chan string
-	Completed         chan int64
-	Consumer          *Consumer
+	Completed         chan DoneMessage
+	Consumer          []*Consumer
+	consumerInc       int
 	incomingConsumers chan Consumer
 }
 
 func NewTopic(name string) *Topic {
-	t := Topic{Name: name, Count: 0, CountID: 0}
+	t := Topic{Name: name, Count: 0, CountID: 0, consumerInc: 0}
 	t.Incoming = make(chan string)
-	t.Completed = make(chan int64)
+	t.Completed = make(chan DoneMessage)
 	t.manageIO()
 	return &t
 }
@@ -28,10 +29,10 @@ func (t *Topic) manageIO() {
 		for {
 			select {
 			case c := <-t.incomingConsumers:
-				t.Consumer = &c
+				t.handleConsumer(&c)
 				break
-			case ID := <-t.Completed:
-				t.markDone(ID)
+			case message := <-t.Completed:
+				t.handleDone(message)
 				break
 			case in := <-t.Incoming:
 				t.handleIn(in)
@@ -45,15 +46,21 @@ func (t *Topic) PutItem(msg string) {
 	t.Incoming <- msg
 }
 
-func (t *Topic) CompletedItem(ID int64) {
-	t.Completed <- ID
+func (t *Topic) CompletedItem(message DoneMessage) {
+	t.Completed <- message
 }
 
-func (t *Topic) Subscribe() chan *Item {
-	consumer := Consumer{Idle: true}
+func (t *Topic) Subscribe() (consumerID int, ch chan *Item) {
+	t.consumerInc++ //PROBABLY NOT SAFE!
+	consumer := Consumer{Idle: true, ID: t.consumerInc}
 	consumer.Channel = make(chan *Item)
 	t.incomingConsumers <- consumer
-	return consumer.Channel
+	return consumer.ID, consumer.Channel
+}
+
+func (t *Topic) handleConsumer(c *Consumer) {
+	t.Consumer = append(t.Consumer, c)
+
 }
 
 func (t *Topic) handleIn(msg string) {
@@ -77,20 +84,26 @@ func (t *Topic) handleIn(msg string) {
 
 func (t *Topic) canWork() bool {
 
-	if t.Consumer == nil || t.Consumer.Idle == false {
-		return false
-	}
-
 	if t.Count == 0 {
 		return false
 	}
+
 	if t.Consumer == nil {
 		return false
 	}
 
-	item := t.Head.Value.(*Item)
-	ca := item.Busy == false
-	return ca
+	anyIdle := false
+	for _, c := range t.Consumer {
+		if c.Idle == true {
+			anyIdle = true
+			break
+		}
+	}
+	if !anyIdle {
+		return false
+	}
+
+	return (t.Head.Value.(*Item)).Busy == false
 
 }
 
@@ -100,13 +113,18 @@ func (t *Topic) work() {
 	}
 
 	item := t.Head.Value.(*Item)
-	t.Consumer.Channel <- item
-	item.Busy = true
-	t.Consumer.Idle = false
 
+	for _, consumer := range t.Consumer {
+		if consumer.Idle {
+			consumer.Channel <- item
+			item.Busy = true
+			consumer.Idle = false
+		}
+	}
 }
-func (t *Topic) markDone(ID int64) {
-	r := find(t.Head, ID)
+
+func (t *Topic) handleDone(message DoneMessage) {
+	r := find(t.Head, message.ItemID)
 
 	n := t.Head.Next()
 
@@ -116,7 +134,13 @@ func (t *Topic) markDone(ID int64) {
 		t.Head = n
 	}
 
-	t.Consumer.Idle = true
+	for _, c := range t.Consumer {
+		if c.ID == message.ConsumerID {
+			c.Idle = true
+			break
+		}
+	}
+
 	t.Count--
 
 	t.work()

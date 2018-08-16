@@ -12,10 +12,10 @@ func main() {
 	topic := state.NewTopic("WORK")
 
 	go func() {
-		c := topic.Subscribe()
+		ID, c := topic.Subscribe()
 		for s := range c {
 			fmt.Println("Reading: ", s.Msg)
-			topic.CompletedItem(s.ID)
+			topic.CompletedItem(state.DoneMessage{ConsumerID: ID, ItemID: s.ID})
 		}
 	}()
 

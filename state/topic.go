@@ -27,14 +27,14 @@ func (t *Topic) manageIO() {
 	go func() {
 		for {
 			select {
-			case in := <-t.Incoming:
-				t.handleIn(in)
+			case c := <-t.incomingConsumers:
+				t.Consumer = &c
 				break
 			case ID := <-t.Completed:
 				t.markDone(ID)
 				break
-			case c := <-t.incomingConsumers:
-				t.Consumer = &c
+			case in := <-t.Incoming:
+				t.handleIn(in)
 				break
 			}
 		}

@@ -10,8 +10,8 @@ type Item struct {
 	BookedUntil time.Time
 }
 
-func NewItem(t *Topic, msg *string) *Item {
-	item := &Item{ID: t.CountID, Msg: *msg}
+func newItem(t *Topic, msg *string) *Item {
+	item := &Item{ID: t.countID, Msg: *msg}
 	item.setBookedUntil(t)
 	return item
 }

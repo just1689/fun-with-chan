@@ -8,23 +8,23 @@ import (
 
 type Topic struct {
 	Name              string
-	Head              *ring.Ring
-	Count             int
-	CountID           int64
-	Incoming          chan string
-	Completed         chan DoneMessage
-	Consumer          []consumer
+	head              *ring.Ring
+	count             int
+	countID           int64
+	incomingChan      chan string
+	completedChan     chan DoneMessage
+	consumers         []consumer
 	consumerInc       int
-	IncomingConsumers chan consumer
+	incomingConsumers chan consumer
 	hasTimeout        bool
 	timeout           int
 }
 
 func NewTopic(config TopicConfig) *Topic {
-	t := Topic{Name: config.Name, Count: 0, CountID: 0, consumerInc: 0, hasTimeout: config.TimeoutSeconds > 0, timeout: config.TimeoutSeconds}
-	t.Incoming = make(chan string, 5)
-	t.Completed = make(chan DoneMessage, 5)
-	t.IncomingConsumers = make(chan consumer, 5)
+	t := Topic{Name: config.Name, count: 0, countID: 0, consumerInc: 0, hasTimeout: config.TimeoutSeconds > 0, timeout: config.TimeoutSeconds}
+	t.incomingChan = make(chan string, 5)
+	t.completedChan = make(chan DoneMessage, 5)
+	t.incomingConsumers = make(chan consumer, 5)
 	t.manageIO()
 	return &t
 }
@@ -34,21 +34,17 @@ type TopicConfig struct {
 	TimeoutSeconds int
 }
 
-func (t *Topic) P() {
-	fmt.Println("Count ", len(t.Consumer))
-}
-
 func (t *Topic) manageIO() {
 	go func() {
 		for {
 			select {
-			case c := <-t.IncomingConsumers:
+			case c := <-t.incomingConsumers:
 				t.handleConsumer(c)
 				break
-			case message := <-t.Completed:
+			case message := <-t.completedChan:
 				t.handleDone(message)
 				break
-			case in := <-t.Incoming:
+			case in := <-t.incomingChan:
 				t.handleIn(in)
 				break
 			}
@@ -57,39 +53,39 @@ func (t *Topic) manageIO() {
 }
 
 func (t *Topic) PutItem(msg string) {
-	t.Incoming <- msg
+	t.incomingChan <- msg
 }
 
 func (t *Topic) CompletedItem(message DoneMessage) {
-	t.Completed <- message
+	t.completedChan <- message
 }
 func (t *Topic) Subscribe(ID string) chan *Item {
 	t.consumerInc++
 	consumer := consumer{idle: true, id: ID}
 	consumer.channel = make(chan *Item)
-	t.Consumer = append(t.Consumer, consumer)
+	t.consumers = append(t.consumers, consumer)
 	return consumer.channel
 }
 
 func (t *Topic) handleConsumer(c consumer) {
-	t.Consumer = append(t.Consumer, c)
+	t.consumers = append(t.consumers, c)
 
 }
 
 func (t *Topic) handleIn(msg string) {
 
-	t.Count++
+	t.count++
 
-	if t.Count == 1 {
+	if t.count == 1 {
 		r := ring.New(1)
-		t.Head = r
-		t.Head.Value = NewItem(t, &msg)
+		t.head = r
+		t.head.Value = newItem(t, &msg)
 		return
 	}
 
 	r := ring.New(1)
-	r.Value = NewItem(t, &msg)
-	r.Link(t.Head)
+	r.Value = newItem(t, &msg)
+	r.Link(t.head)
 
 	t.work()
 
@@ -97,17 +93,17 @@ func (t *Topic) handleIn(msg string) {
 
 func (t *Topic) canWork() bool {
 
-	if t.Count == 0 {
+	if t.count == 0 {
 		return false
 	}
 
-	if t.Consumer == nil {
+	if t.consumers == nil {
 		fmt.Println("CW: consumers nil")
 		return false
 	}
 
 	anyIdle := false
-	for _, c := range t.Consumer {
+	for _, c := range t.consumers {
 		if c.idle == true {
 			anyIdle = true
 			break
@@ -117,7 +113,7 @@ func (t *Topic) canWork() bool {
 		return false
 	}
 
-	return (t.Head.Value.(*Item)).Busy == false
+	return (t.head.Value.(*Item)).Busy == false
 
 }
 
@@ -128,7 +124,7 @@ func (t *Topic) work() int {
 		return worked
 	}
 
-	for _, consumer := range t.Consumer {
+	for _, consumer := range t.consumers {
 
 		item := t.findFirstAvailMsg()
 		if item == nil {
@@ -155,7 +151,7 @@ func (t *Topic) work() int {
 
 func (t *Topic) findFirstAvailMsg() *Item {
 	ok := true
-	r := t.Head
+	r := t.head
 	count := 0
 	var item *Item
 	for ok {
@@ -179,24 +175,24 @@ func (t *Topic) findFirstAvailMsg() *Item {
 }
 
 func (t *Topic) handleDone(message DoneMessage) {
-	r := find(t.Head, message.ItemID)
+	r := find(t.head, message.ItemID)
 
-	n := t.Head.Next()
+	n := t.head.Next()
 
 	removed := r.Prev().Unlink(1)
 
-	if t.Head == removed {
-		t.Head = n
+	if t.head == removed {
+		t.head = n
 	}
 
-	for _, c := range t.Consumer {
+	for _, c := range t.consumers {
 		if c.id == message.ConsumerID {
 			c.idle = true
 			break
 		}
 	}
 
-	t.Count--
+	t.count--
 
 	t.work()
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/just1689/fun-with-chan/state"
 	"time"
+	"google.golang.org/grpc"
+	"github.com/just1689/fun-with-chan/fun"
 )
 
 func main() {
@@ -25,6 +27,12 @@ func main() {
 	createConsumer(topic, "B")
 
 	time.Sleep(10 * time.Second)
+}
+
+func startServer() {
+	server := grpc.NewServer()
+	fun.RegisterSubscribeServer(server, fun.SubscribeServer())
+
 }
 
 func createConsumer(topic *state.Topic, ID string) {

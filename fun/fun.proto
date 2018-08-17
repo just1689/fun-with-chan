@@ -2,12 +2,12 @@ syntax = "proto3";
 package fun;
 
 
-message NullMessage {
+message Void {
 }
 
 //Subscribe
 service Subscribe {
-    rpc SaySubscribe (SubscribeRequest) returns (NullMessage) {
+    rpc SaySubscribe (SubscribeRequest) returns (Void) {
     }
 }
 message SubscribeRequest {
@@ -16,7 +16,7 @@ message SubscribeRequest {
 
 //Put
 service Put {
-    rpc SayPut (PutRequest) returns (NullMessage) {
+    rpc SayPut (PutRequest) returns (Void) {
     }
 }
 message PutRequest {
@@ -25,7 +25,7 @@ message PutRequest {
 
 //Push
 service Push {
-    rpc SayPush (PushRequest) returns (NullMessage) {
+    rpc SayPush (PushRequest) returns (Void) {
     }
 }
 message PushRequest {
@@ -34,7 +34,7 @@ message PushRequest {
 
 //Done
 service Done {
-    rpc SayDone (DoneRequest) returns (NullMessage) {
+    rpc SayDone (DoneRequest) returns (Void) {
     }
 }
 message DoneRequest {

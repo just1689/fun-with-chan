@@ -13,12 +13,6 @@ func main() {
 	topic := state.NewTopic("WORK")
 
 
-	createConsumer(topic, "100")
-	createConsumer(topic, "200")
-
-
-
-
 	go func() {
 
 		for i := 1; i <= 10; i++ {
@@ -29,6 +23,10 @@ func main() {
 		}
 	}()
 
+	time.Sleep(2 * time.Second)
+
+	createConsumer(topic, "100")
+	createConsumer(topic, "200")
 
 	time.Sleep(2 * time.Second)
 }
@@ -37,7 +35,7 @@ func createConsumer(topic *state.Topic, ID string) {
 	c := topic.Subscribe(ID)
 	go func() {
 		for item := range c {
-			fmt.Println("Message from ", ID, " says: ", item.Msg)
+			fmt.Println("<-", item.Msg, "says consumer", ID)
 			topic.CompletedItem(state.DoneMessage{ConsumerID: ID, ItemID: item.ID})
 
 		}

@@ -122,16 +122,14 @@ func (t *Topic) work() int {
 
 	for _, consumer := range t.Consumer {
 
-		fmt.Println("Giving not yet: ", consumer.ID)
 		item := t.findFirstAvailMsg()
 
 		if item == nil {
-			fmt.Println("Could not find an item -->")
 			return worked
 		}
 
 		if consumer.Idle {
-			fmt.Println("Giving to consumer: ", consumer.ID)
+			fmt.Println("->", item.Msg, " to consumer", consumer.ID)
 			consumer.Channel <- item
 			item.Busy = true
 			consumer.Idle = false
@@ -151,15 +149,17 @@ func (t *Topic) work() int {
 func (t *Topic) findFirstAvailMsg() *Item {
 	ok := true
 	r := t.Head
+	count := 0
 	var item *Item
 	for ok {
 		item = r.Value.(*Item)
 		if !item.Busy {
 			return item
 		}
-		if r.Next() == t.Head {
+		if count > r.Len() {
 			ok = false
 		}
+		count++
 	}
 	return nil
 }

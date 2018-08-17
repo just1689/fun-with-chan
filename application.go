@@ -21,17 +21,16 @@ func main() {
 		}
 	}()
 
-	createConsumer(topic, "A", 11)
-	createConsumer(topic, "B", 80)
+	createConsumer(topic, "A")
+	createConsumer(topic, "B")
 
 	time.Sleep(10 * time.Second)
 }
 
-func createConsumer(topic *state.Topic, ID string, sleep int) {
+func createConsumer(topic *state.Topic, ID string) {
 	c := topic.Subscribe(ID)
 	go func() {
 		for item := range c {
-			//time.Sleep(time.Duration(sleep) * time.Millisecond)
 			if item.BookedUntil.Before(time.Now()) {
 				topic.CompletedItem(state.DoneMessage{ConsumerID: ID, ItemID: item.ID})
 				continue

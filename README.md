@@ -10,17 +10,10 @@ The goal of this project is to have fun with ring.Ring, chan, grpc and go routin
 - Put
 - Push
 - Mark done
-### Multiple consumers
-- Part of Topic
-- Part of canWork()
-- Part of work()
+- Multiple consumers
+- Timeouts
 
 ## To do
-
-### Timeouts
-- Part of newTopic()
-- Part of canWork()
-- Part of markDone()
 
 ### Logging
 - Each put

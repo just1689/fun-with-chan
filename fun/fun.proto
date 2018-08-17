@@ -1,7 +1,6 @@
 syntax = "proto3";
 package fun;
 
-
 message Void {
 }
 
@@ -19,17 +18,15 @@ message Item {
     string msg = 2;
 }
 
-//From client
-service ClientService {
+service Fun {
     rpc sub (SimpleMessage) returns (Void) {
     }
     rpc put (PutMessage) returns (Void) {
     }
     rpc done (SimpleMessage) returns (Void) {
     }
-}
-//From server
-service ServerService {
     rpc push (Item) returns (Void) {
     }
 }
+
+//protoc -I fun/ fun/fun.proto --go_out=plugins=grpc:fun

@@ -20,8 +20,8 @@ type Topic struct {
 	timeout           int
 }
 
-func NewTopic(name string, seconds int) *Topic {
-	t := Topic{Name: name, Count: 0, CountID: 0, consumerInc: 0, hasTimeout: seconds > 0, timeout: seconds}
+func NewTopic(config TopicConfig) *Topic {
+	t := Topic{Name: config.Name, Count: 0, CountID: 0, consumerInc: 0, hasTimeout: config.TimeoutSeconds > 0, timeout: config.TimeoutSeconds}
 	t.Incoming = make(chan string, 5)
 	t.Completed = make(chan DoneMessage, 5)
 	t.IncomingConsumers = make(chan Consumer, 5)
@@ -30,8 +30,8 @@ func NewTopic(name string, seconds int) *Topic {
 }
 
 type TopicConfig struct {
-	Name string
-
+	Name           string
+	TimeoutSeconds int
 }
 
 func (t *Topic) P() {
@@ -163,9 +163,9 @@ func (t *Topic) findFirstAvailMsg() *Item {
 		if !item.Busy {
 			return item
 		}
-		if item.Busy && item.BookedUntil.After(time.Now()) {
+		if item.Busy && item.BookedUntil.Before(time.Now()) {
 			item.Busy = false
-			fmt.Println("Found one booked too long!", item.Msg)
+			item.setBookedUntil(t)
 			return item
 		}
 

@@ -22,6 +22,11 @@ The goal of this project is to have fun with ring.Ring, chan, grpc and go routin
 - Part of canWork()
 - Part of markDone()
 
+### Logging
+- Each put
+- Each push
+- Number of consumers
+
 ### GRPC
 - Messages for newTopic(), put(), subscribe(), push(), disconnect
 - Client for put()

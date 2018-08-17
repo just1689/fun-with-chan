@@ -10,6 +10,10 @@ The goal of this project is to have fun with ring.Ring, chan, grpc and go routin
 - Put
 - Push
 - Mark done
+### Multiple consumers
+- Part of Topic
+- Part of canWork()
+- Part of work()
 
 ## To do
 
@@ -17,11 +21,6 @@ The goal of this project is to have fun with ring.Ring, chan, grpc and go routin
 - Part of newTopic()
 - Part of canWork()
 - Part of markDone()
-
-### Multiple consumers
-- Part of Topic
-- Part of canWork()
-- Part of work()
 
 ### GRPC
 - Messages for newTopic(), put(), subscribe(), push(), disconnect

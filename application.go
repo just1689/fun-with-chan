@@ -2,12 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/just1689/fun-with-chan/fun"
+	"github.com/just1689/fun-with-chan/io"
 	"github.com/just1689/fun-with-chan/state"
-	"google.golang.org/grpc"
-	"net"
 	"time"
-	"golang.org/x/net/context"
 )
 
 func main() {
@@ -28,23 +25,7 @@ func main() {
 	createConsumer(topic, "A")
 	createConsumer(topic, "B")
 
-	startServer()
-
-}
-
-type SubsciberServer struct {
-}
-
-func (s SubsciberServer) SaySubscribe(context.Context, *fun.SubscribeRequest) (*fun.Void, error) {
-	return nil, nil
-}
-
-func startServer() {
-	server := grpc.NewServer()
-	var subscribers SubsciberServer
-	fun.RegisterSubscribeServer(server, subscribers)
-	li, _ := net.Listen("tcp", ":8000")
-	server.Serve(li)
+	io.StartServer()
 
 }
 

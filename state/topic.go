@@ -26,6 +26,10 @@ func NewTopic(name string) *Topic {
 	return &t
 }
 
+func (t *Topic) P() {
+	fmt.Println("Count ", len(t.Consumer))
+}
+
 func (t *Topic) manageIO() {
 	go func() {
 		for {
@@ -79,7 +83,7 @@ func (t *Topic) handleIn(msg string) {
 	r.Value = &Item{ID: t.CountID, Msg: msg, Busy: false}
 	r.Link(t.Head)
 
-	t.work(0)
+	t.work()
 
 }
 
@@ -108,27 +112,56 @@ func (t *Topic) canWork() bool {
 	return (t.Head.Value.(*Item)).Busy == false
 
 }
-func (t *Topic) work(last int) {
-	if !t.canWork() {
-		return
-	}
 
+func (t *Topic) work() int {
 	worked := 0
 
-	item := t.Head.Value.(*Item)
+	if !t.canWork() {
+		return worked
+	}
 
 	for _, consumer := range t.Consumer {
 
+		fmt.Println("Giving not yet: ", consumer.ID)
+		item := t.findFirstAvailMsg()
+
+		if item == nil {
+			fmt.Println("Could not find an item -->")
+			return worked
+		}
+
 		if consumer.Idle {
+			fmt.Println("Giving to consumer: ", consumer.ID)
 			consumer.Channel <- item
 			item.Busy = true
 			consumer.Idle = false
 			worked++
-			break
+			continue
+
+		} else {
+			fmt.Println("Worker: ", consumer.ID, " was idle? ", consumer.Idle)
 		}
 
 	}
 
+	return worked
+
+}
+
+func (t *Topic) findFirstAvailMsg() *Item {
+	ok := true
+	r := t.Head
+	var item *Item
+	for ok {
+		item = r.Value.(*Item)
+		if !item.Busy {
+			return item
+		}
+		if r.Next() == t.Head {
+			ok = false
+		}
+	}
+	return nil
 }
 
 func (t *Topic) handleDone(message DoneMessage) {
@@ -151,5 +184,5 @@ func (t *Topic) handleDone(message DoneMessage) {
 
 	t.Count--
 
-	t.work(0)
+	t.work()
 }

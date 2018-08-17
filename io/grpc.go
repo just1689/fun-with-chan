@@ -20,9 +20,6 @@ func (f FunServer) Put(context.Context, *fun.PutMessage) (*fun.Void, error) {
 func (f FunServer) Done(context.Context, *fun.SimpleMessage) (*fun.Void, error) {
 	return nil, nil
 }
-func (f FunServer) Push(context.Context, *fun.Item) (*fun.Void, error) {
-	return nil, nil
-}
 
 func StartServer() {
 	server := grpc.NewServer()

@@ -13,9 +13,9 @@ type Topic struct {
 	CountID           int64
 	Incoming          chan string
 	Completed         chan DoneMessage
-	Consumer          []Consumer
+	Consumer          []consumer
 	consumerInc       int
-	IncomingConsumers chan Consumer
+	IncomingConsumers chan consumer
 	hasTimeout        bool
 	timeout           int
 }
@@ -24,7 +24,7 @@ func NewTopic(config TopicConfig) *Topic {
 	t := Topic{Name: config.Name, Count: 0, CountID: 0, consumerInc: 0, hasTimeout: config.TimeoutSeconds > 0, timeout: config.TimeoutSeconds}
 	t.Incoming = make(chan string, 5)
 	t.Completed = make(chan DoneMessage, 5)
-	t.IncomingConsumers = make(chan Consumer, 5)
+	t.IncomingConsumers = make(chan consumer, 5)
 	t.manageIO()
 	return &t
 }
@@ -65,13 +65,13 @@ func (t *Topic) CompletedItem(message DoneMessage) {
 }
 func (t *Topic) Subscribe(ID string) chan *Item {
 	t.consumerInc++
-	consumer := Consumer{idle: true, id: ID}
+	consumer := consumer{idle: true, id: ID}
 	consumer.channel = make(chan *Item)
 	t.Consumer = append(t.Consumer, consumer)
 	return consumer.channel
 }
 
-func (t *Topic) handleConsumer(c Consumer) {
+func (t *Topic) handleConsumer(c consumer) {
 	t.Consumer = append(t.Consumer, c)
 
 }

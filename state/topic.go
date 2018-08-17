@@ -15,10 +15,12 @@ type Topic struct {
 	Consumer          []Consumer
 	consumerInc       int
 	IncomingConsumers chan Consumer
+	hasTimeout        bool
+	timeout           int
 }
 
-func NewTopic(name string) *Topic {
-	t := Topic{Name: name, Count: 0, CountID: 0, consumerInc: 0}
+func NewTopic(name string, seconds int) *Topic {
+	t := Topic{Name: name, Count: 0, CountID: 0, consumerInc: 0, hasTimeout: seconds > 0, timeout: seconds}
 	t.Incoming = make(chan string, 5)
 	t.Completed = make(chan DoneMessage, 5)
 	t.IncomingConsumers = make(chan Consumer, 5)
@@ -75,12 +77,12 @@ func (t *Topic) handleIn(msg string) {
 	if t.Count == 1 {
 		r := ring.New(1)
 		t.Head = r
-		t.Head.Value = &Item{ID: t.CountID, Msg: msg, Busy: false}
+		t.Head.Value = NewItem(t, &msg)
 		return
 	}
 
 	r := ring.New(1)
-	r.Value = &Item{ID: t.CountID, Msg: msg, Busy: false}
+	r.Value = NewItem(t, &msg)
 	r.Link(t.Head)
 
 	t.work()

@@ -10,7 +10,7 @@ func main() {
 
 	fmt.Println("Starting")
 
-	topic := state.NewTopic("WORK")
+	topic := state.NewTopic("WORK", 0)
 
 	go func() {
 		for i := 1; i <= 10000; i++ {

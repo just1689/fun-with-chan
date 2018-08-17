@@ -65,10 +65,10 @@ func (t *Topic) CompletedItem(message DoneMessage) {
 }
 func (t *Topic) Subscribe(ID string) chan *Item {
 	t.consumerInc++
-	consumer := Consumer{Idle: true, ID: ID}
-	consumer.Channel = make(chan *Item)
+	consumer := Consumer{idle: true, id: ID}
+	consumer.channel = make(chan *Item)
 	t.Consumer = append(t.Consumer, consumer)
-	return consumer.Channel
+	return consumer.channel
 }
 
 func (t *Topic) handleConsumer(c Consumer) {
@@ -108,7 +108,7 @@ func (t *Topic) canWork() bool {
 
 	anyIdle := false
 	for _, c := range t.Consumer {
-		if c.Idle == true {
+		if c.idle == true {
 			anyIdle = true
 			break
 		}
@@ -135,16 +135,16 @@ func (t *Topic) work() int {
 			return worked
 		}
 
-		if consumer.Idle {
-			fmt.Println("->", item.Msg, " to consumer", consumer.ID)
-			consumer.Channel <- item
+		if consumer.idle {
+			fmt.Println("->", item.Msg, " to consumer", consumer.id)
+			consumer.channel <- item
 			item.Busy = true
-			consumer.Idle = false
+			consumer.idle = false
 			worked++
 			continue
 
 		} else {
-			fmt.Println("Worker: ", consumer.ID, " was idle? ", consumer.Idle)
+			fmt.Println("Worker: ", consumer.id, " was idle? ", consumer.idle)
 		}
 
 	}
@@ -190,8 +190,8 @@ func (t *Topic) handleDone(message DoneMessage) {
 	}
 
 	for _, c := range t.Consumer {
-		if c.ID == message.ConsumerID {
-			c.Idle = true
+		if c.id == message.ConsumerID {
+			c.idle = true
 			break
 		}
 	}

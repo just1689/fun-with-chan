@@ -13,8 +13,14 @@ func main() {
 	topic := state.NewTopic("WORK")
 
 	go func() {
+		for i := 1; i <= 1000; i++ {
+			msg := fmt.Sprint(i)
+			topic.PutItem(msg)
+		}
+	}()
 
-		for i := 1; i <= 100; i++ {
+	go func() {
+		for i := 2000; i <= 3000; i++ {
 			msg := fmt.Sprint(i)
 			topic.PutItem(msg)
 		}

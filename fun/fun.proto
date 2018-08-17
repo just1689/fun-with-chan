@@ -5,38 +5,31 @@ package fun;
 message Void {
 }
 
-//Subscribe
-service Subscribe {
-    rpc SaySubscribe (SubscribeRequest) returns (Void) {
-    }
-}
-message SubscribeRequest {
-    string name = 1;
+message SimpleMessage {
+    string val = 1;
 }
 
-//Put
-service Put {
-    rpc SayPut (PutRequest) returns (Void) {
-    }
-}
-message PutRequest {
-    string message = 1;
+message PutMessage {
+    string topic = 1;
+    string msg = 2;
 }
 
-//Push
-service Push {
-    rpc SayPush (PushRequest) returns (Void) {
-    }
-}
-message PushRequest {
-    string message = 1;
+message Item {
+    int32 id = 1;
+    string msg = 2;
 }
 
-//Done
-service Done {
-    rpc SayDone (DoneRequest) returns (Void) {
+//From client
+service ClientService {
+    rpc sub (SimpleMessage) returns (Void) {
+    }
+    rpc put (PutMessage) returns (Void) {
+    }
+    rpc done (SimpleMessage) returns (Void) {
     }
 }
-message DoneRequest {
-    string message = 1;
+//From server
+service ServerService {
+    rpc push (Item) returns (Void) {
+    }
 }

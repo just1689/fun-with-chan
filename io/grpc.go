@@ -5,6 +5,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"net"
+	"log"
 )
 
 type SubsciberServer struct {
@@ -21,7 +22,10 @@ func StartServer() {
 	server := grpc.NewServer()
 	var subscribers SubsciberServer
 	fun.RegisterSubscribeServer(server, subscribers)
-	li, _ := net.Listen("tcp", ":8000")
+	li, err := net.Listen("tcp", ":8000")
+	if err != nil {
+		log.Fatal("Could not GRPC start server")
+	}
 	server.Serve(li)
 
 }

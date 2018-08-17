@@ -13,14 +13,7 @@ func main() {
 	topic := state.NewTopic("WORK")
 
 	go func() {
-		for i := 1; i <= 1000; i++ {
-			msg := fmt.Sprint(i)
-			topic.PutItem(msg)
-		}
-	}()
-
-	go func() {
-		for i := 2000; i <= 3000; i++ {
+		for i := 1; i <= 10000; i++ {
 			msg := fmt.Sprint(i)
 			topic.PutItem(msg)
 		}
@@ -41,7 +34,6 @@ func createConsumer(topic *state.Topic, ID string) {
 		for item := range c {
 			fmt.Println("<-", item.Msg, "says consumer", ID)
 			topic.CompletedItem(state.DoneMessage{ConsumerID: ID, ItemID: item.ID})
-
 		}
 	}()
 

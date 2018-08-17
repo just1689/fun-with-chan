@@ -10,10 +10,10 @@ func main() {
 
 	fmt.Println("Starting")
 
-	topic := state.NewTopic("WORK", 0)
+	topic := state.NewTopic("WORK", 1)
 
 	go func() {
-		for i := 1; i <= 10000; i++ {
+		for i := 1; i <= 100; i++ {
 			msg := fmt.Sprint(i)
 			topic.PutItem(msg)
 		}
@@ -21,9 +21,6 @@ func main() {
 
 	createConsumer(topic, "A")
 	createConsumer(topic, "B")
-	createConsumer(topic, "C")
-	createConsumer(topic, "D")
-	createConsumer(topic, "E")
 
 	time.Sleep(10 * time.Second)
 }
@@ -34,6 +31,7 @@ func createConsumer(topic *state.Topic, ID string) {
 		for item := range c {
 			fmt.Println("<-", item.Msg, "says consumer", ID)
 			topic.CompletedItem(state.DoneMessage{ConsumerID: ID, ItemID: item.ID})
+			time.Sleep(1000)
 		}
 	}()
 

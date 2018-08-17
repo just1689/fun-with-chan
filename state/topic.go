@@ -3,6 +3,7 @@ package state
 import (
 	"container/ring"
 	"fmt"
+	"time"
 )
 
 type Topic struct {
@@ -26,6 +27,11 @@ func NewTopic(name string, seconds int) *Topic {
 	t.IncomingConsumers = make(chan Consumer, 5)
 	t.manageIO()
 	return &t
+}
+
+type TopicConfig struct {
+	Name string
+
 }
 
 func (t *Topic) P() {
@@ -157,6 +163,12 @@ func (t *Topic) findFirstAvailMsg() *Item {
 		if !item.Busy {
 			return item
 		}
+		if item.Busy && item.BookedUntil.After(time.Now()) {
+			item.Busy = false
+			fmt.Println("Found one booked too long!", item.Msg)
+			return item
+		}
+
 		if count > r.Len() {
 			ok = false
 		}

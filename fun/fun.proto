@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "fun.grpc.examples.fun";
+option java_outer_classname = "FunProto";
+
+package fun;
+
+message NullMessage {
+}
+
+//Subscribe
+service Subscribe {
+    rpc SaySubscribe (SubscribeRequest) returns (NullMessage) {
+    }
+}
+message SubscribeRequest {
+    string name = 1;
+}
+
+//Put
+service Put {
+    rpc SayPut (PutRequest) returns (NullMessage) {
+    }
+}
+message PutRequest {
+    string message = 1;
+}
+
+//Push
+service Push {
+    rpc SayPush (PushRequest) returns (NullMessage) {
+    }
+}
+message PushRequest {
+    string message = 1;
+}
+
+//Done
+service Done {
+    rpc SayDone (DoneRequest) returns (NullMessage) {
+    }
+}
+message DoneRequest {
+    string message = 1;
+}

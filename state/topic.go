@@ -94,7 +94,7 @@ func (t *Topic) canWork() bool {
 	}
 
 	if t.Consumer == nil {
-		fmt.Println("NW: consumers")
+		fmt.Println("CW: consumers nil")
 		return false
 	}
 
@@ -123,7 +123,6 @@ func (t *Topic) work() int {
 	for _, consumer := range t.Consumer {
 
 		item := t.findFirstAvailMsg()
-
 		if item == nil {
 			return worked
 		}
@@ -159,6 +158,7 @@ func (t *Topic) findFirstAvailMsg() *Item {
 		if count > r.Len() {
 			ok = false
 		}
+		r = r.Next()
 		count++
 	}
 	return nil

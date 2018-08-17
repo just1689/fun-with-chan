@@ -12,23 +12,21 @@ func main() {
 
 	topic := state.NewTopic("WORK")
 
-
 	go func() {
 
-		for i := 1; i <= 10; i++ {
+		for i := 1; i <= 100; i++ {
 			msg := fmt.Sprint(i)
-			//fmt.Println("Writing: ", msg)
 			topic.PutItem(msg)
-			time.Sleep(10 * time.Millisecond)
 		}
 	}()
 
-	time.Sleep(2 * time.Second)
+	createConsumer(topic, "A")
+	createConsumer(topic, "B")
+	createConsumer(topic, "C")
+	createConsumer(topic, "D")
+	createConsumer(topic, "E")
 
-	createConsumer(topic, "100")
-	createConsumer(topic, "200")
-
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 }
 
 func createConsumer(topic *state.Topic, ID string) {

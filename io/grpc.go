@@ -8,20 +8,26 @@ import (
 	"log"
 )
 
-type SubsciberServer struct {
+type FunServer struct {
 }
 
-func (s SubsciberServer) SaySubscribe(ctx context.Context, f *fun.SubscribeRequest) (*fun.Void, error) {
-	go func() {
-
-	}()
+func (f FunServer) Sub(context.Context, *fun.SimpleMessage) (*fun.Void, error) {
+	return nil, nil
+}
+func (f FunServer) Put(context.Context, *fun.PutMessage) (*fun.Void, error) {
+	return nil, nil
+}
+func (f FunServer) Done(context.Context, *fun.SimpleMessage) (*fun.Void, error) {
+	return nil, nil
+}
+func (f FunServer) Push(context.Context, *fun.Item) (*fun.Void, error) {
 	return nil, nil
 }
 
 func StartServer() {
 	server := grpc.NewServer()
-	var subscribers SubsciberServer
-	fun.RegisterSubscribeServer(server, subscribers)
+	var servers FunServer
+	fun.RegisterFunServer(server, servers)
 	li, err := net.Listen("tcp", ":8000")
 	if err != nil {
 		log.Fatal("Could not GRPC start server")

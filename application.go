@@ -5,31 +5,35 @@ import (
 	"github.com/just1689/fun-with-chan/io"
 	"github.com/just1689/fun-with-chan/state"
 	"time"
+	"sync"
+	"github.com/just1689/fun-with-chan/example"
 )
+
+var w sync.WaitGroup
 
 func main() {
 
 	fmt.Println("Starting")
 
-	topicConfig := state.TopicConfig{Name: "Le queue", TimeoutSeconds: 1}
-
-	topic := state.NewTopic(topicConfig)
 
 	go func() {
-		for i := 1; i <= 100; i++ {
+		for i := 1; i <= 2; i++ {
 			msg := fmt.Sprint(i)
-			topic.PutItem(msg)
+			example.Topic.PutItem(msg)
 		}
 	}()
 
-	createConsumer(topic, "A")
-	createConsumer(topic, "B")
+	createPrintConsumer(example.Topic, "A")
+
 
 	io.StartServer()
 
+	w.Add(1)
+	w.Wait()
+
 }
 
-func createConsumer(topic *state.Topic, ID string) {
+func createPrintConsumer(topic *state.Topic, ID string) {
 	c := topic.Subscribe(ID)
 	go func() {
 		for item := range c {

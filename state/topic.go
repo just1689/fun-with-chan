@@ -161,7 +161,6 @@ func (t *Topic) findFirstAvailMsg() *Item {
 		}
 		if item.Busy && item.BookedUntil.Before(time.Now()) {
 			item.Busy = false
-			item.setBookedUntil(t)
 			return item
 		}
 

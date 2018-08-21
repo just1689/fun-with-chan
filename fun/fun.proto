@@ -19,14 +19,14 @@ message Item {
 }
 
 service Fun {
-    rpc sub (SimpleMessage) returns (Void) {
+    //    rpc sub (SimpleMessage) returns (Void) {
+    //    }
+    rpc put (stream PutMessage) returns (stream Void) {
     }
-    rpc put (PutMessage) returns (Void) {
-    }
-    rpc done (SimpleMessage) returns (Void) {
-    }
-    rpc push (Item) returns (Void) {
-    }
+    //    rpc done (SimpleMessage) returns (Void) {
+    //    }
+    //    rpc push (Item) returns (Void) {
+    //    }
 }
 
 //protoc -I fun/ fun/fun.proto --go_out=plugins=grpc:fun

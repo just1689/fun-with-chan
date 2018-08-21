@@ -2,31 +2,48 @@ package io
 
 import (
 	"github.com/just1689/fun-with-chan/fun"
-	"golang.org/x/net/context"
-	"net"
 	"log"
-	"google.golang.org/grpc"
 	"github.com/just1689/fun-with-chan/example"
+	"io"
+	"fmt"
+	"net"
+	"google.golang.org/grpc"
 )
 
 type funServer struct {
 }
 
-func (f funServer) Sub(context.Context, *fun.SimpleMessage) (*fun.Void, error) {
-	return nil, nil
-}
-func (f funServer) Put(ctx context.Context, item *fun.PutMessage) (*fun.Void, error) {
-	example.Topic.PutItem(item.Msg)
-	return new(fun.Void), nil
-}
-func (f funServer) Done(context.Context, *fun.SimpleMessage) (*fun.Void, error) {
-	return nil, nil
-}
-func (f funServer) Push(context.Context, *fun.Item) (*fun.Void, error) {
-	return nil, nil
+func (f funServer) Put(i fun.Fun_PutServer) error {
+
+	ctx := i.Context()
+
+	example.Topic.PutItem("XXX")
+
+	for {
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		item, err := i.Recv()
+		if err == io.EOF {
+			log.Println("Normal exit", err)
+			return err
+		}
+		if err != nil {
+			log.Println("We got an error over GRPC! ", err)
+			continue
+		}
+		fmt.Println("Putting item in the queue: ", item.Msg)
+		example.Topic.PutItem(item.Msg)
+	}
+
 }
 
-func StartServer() {
+func
+StartServer() {
 
 	//Listen
 	li, err := net.Listen("tcp", ":8000")

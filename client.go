@@ -3,10 +3,8 @@ package main
 import (
 	"google.golang.org/grpc"
 	"log"
-	"time"
 	"golang.org/x/net/context"
 	"github.com/just1689/fun-with-chan/fun"
-	"fmt"
 )
 
 const (
@@ -22,14 +20,22 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	c := fun.NewFunClient(conn)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	re, err := c.Put(ctx, &fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream, err := c.Put(context.Background())
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		log.Fatalf("did not connect to stream: %v", err)
 	}
-	fmt.Println(re)
-	time.Sleep(2 * time.Second)
+
+	//go func() {
+	//	_, e := stream.Recv()
+	//	if e != nil {
+	//		log.Println("Client received error ", e)
+	//		return
+	//	}
+	//	fmt.Println("stream.Recv got something")
+	//}()
+
+	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream.CloseSend()
+
 	log.Printf("Put complete!")
 }

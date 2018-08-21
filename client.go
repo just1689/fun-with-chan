@@ -35,6 +35,11 @@ func main() {
 	//}()
 
 	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
 	stream.CloseSend()
 
 	log.Printf("Put complete!")

@@ -9,7 +9,6 @@ import (
 
 const (
 	address = "localhost:8000"
-	msg     = "Swag for yolo!"
 )
 
 func main() {
@@ -25,21 +24,7 @@ func main() {
 		log.Fatalf("did not connect to stream: %v", err)
 	}
 
-	//go func() {
-	//	_, e := stream.Recv()
-	//	if e != nil {
-	//		log.Println("Client received error ", e)
-	//		return
-	//	}
-	//	fmt.Println("stream.Recv got something")
-	//}()
-
-	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
-	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
-	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
-	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
-	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
-	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: msg})
+	stream.Send(&fun.PutMessage{Topic: "Le queue", Msg: "Just one message"})
 	stream.CloseSend()
 
 	log.Printf("Put complete!")

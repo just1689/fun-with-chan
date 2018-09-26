@@ -1,4 +1,6 @@
 # fun-with-chan
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjust1689%2Ffun-with-chan.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjust1689%2Ffun-with-chan?ref=badge_shield)
+
 
 The goal of this project is to have fun with ring.Ring, chan, grpc and go routines
 
@@ -36,3 +38,6 @@ The goal of this project is to have fun with ring.Ring, chan, grpc and go routin
 - Config yaml / json read on startup
 - Config ports
 - Config cache sizes
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjust1689%2Ffun-with-chan.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjust1689%2Ffun-with-chan?ref=badge_large)
